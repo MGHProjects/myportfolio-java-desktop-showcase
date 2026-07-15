@@ -10,10 +10,19 @@
   <description>A modern Swing desktop app for testing MyPortfolio Desktop Protocol sandboxes.</description>
 
   <properties>
-    <maven.compiler.source>17</maven.compiler.source>
-    <maven.compiler.target>17</maven.compiler.target>
+    <maven.compiler.release>17</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <junit.version>5.12.2</junit.version>
   </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 
   <build>
     <finalName>myportfolio-java-desktop-showcase</finalName>
@@ -34,6 +43,11 @@
             </manifest>
           </archive>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.5.3</version>
       </plugin>
     </plugins>
   </build>

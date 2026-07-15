@@ -1,15 +1,28 @@
 # MyPortfolio Java Desktop Showcase
 
-A polished Java Swing desktop app built to test MyPortfolio Desktop Protocol sandboxes.
+A deterministic Java Swing desktop fixture built to test MyPortfolio Desktop Protocol sandboxes.
 
-It is intentionally dependency-free: Maven builds a runnable jar and the app exercises native desktop behavior such as focus, minimize, restore, drawing, timers, panels, and input controls.
+The runtime jar is dependency-free. It exercises actual desktop behavior rather than presenting a passive mock: focus, resize and DPI reporting, mouse and drag events, keyboard entry, clipboard access, modal dialogs, multiple windows, clean shutdown, and an explicit non-zero crash path.
 
 ## Run Locally
 
 ```bash
-mvn package
+./mvnw package
 java -jar target/myportfolio-java-desktop-showcase.jar
 ```
+
+## Interaction Matrix
+
+| Probe | Expected result |
+| --- | --- |
+| Type in the input | MDP keyboard events reach a focused Swing control |
+| Click or drag the blue surface | Pointer coordinates and event count update |
+| `Dialog` or `Ctrl+D` | A modal Swing dialog opens and can be dismissed |
+| `New window` or `Ctrl+N` | A second focusable window opens |
+| `Copy token` or `Ctrl+Shift+C` | The fixture proof URI is written to the clipboard |
+| `Resize` | The frame changes size and reports dimensions and screen DPI |
+| `Clean close` | The process exits through `WINDOW_CLOSING` with status 0 |
+| `Crash 42` | After confirmation, the process exits with status 42 for crash capture |
 
 ## Sandbox Notes
 
@@ -28,3 +41,11 @@ Use it to test:
 - Mouse and keyboard input
 - Minimize and restore from the MyPortfolio desktop toolbar
 - Window switching
+- Clipboard, dialog, resize, and DPI behavior
+- Clean-close versus non-zero crash evidence
+
+## Verification
+
+`./mvnw verify` runs a repeatability test for the telemetry model and a real AWT smoke test. CI starts an Xvfb display, drives safe controls, opens the secondary window, records pointer input, and writes `target/desktop-fixture-smoke.png`. The test rejects blank or monochrome captures.
+
+Licensed under the MIT License.
