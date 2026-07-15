@@ -24,7 +24,10 @@ jobs:
           java-version: '17'
           cache: maven
       - name: Install virtual display
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends xvfb
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            fontconfig fonts-dejavu-core libxi6 libxrender1 libxtst6 unzip xvfb
       - name: Test, render, and package
         run: xvfb-run -a -s '-screen 0 1440x1000x24' bash ./mvnw --batch-mode --no-transfer-progress verify
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
@@ -34,6 +37,14 @@ jobs:
           path: target/desktop-fixture-smoke.png
           if-no-files-found: error
           retention-days: 7
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: desktop-fixture-build
+          path: |
+            target/myportfolio-java-desktop-showcase.jar
+            target/bom.json
+          if-no-files-found: error
+          retention-days: 14
 
   dependency-review:
     if: github.event_name == 'pull_request'
