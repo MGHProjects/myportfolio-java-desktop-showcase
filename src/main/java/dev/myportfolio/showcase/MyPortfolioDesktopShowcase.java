@@ -33,6 +33,9 @@ import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.Toolkit;
 import java.awt.Window;
+import java.nio.ByteBuffer;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
@@ -50,7 +53,6 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.Random;
 
 public final class MyPortfolioDesktopShowcase {
     public static void main(String[] args) {
@@ -72,24 +74,36 @@ record ShowcaseSnapshot(int health, int velocity, String grade, int confidence, 
 }
 
 final class ShowcaseModel {
-    private final Random random;
+    private final byte[] seed;
     private final Clock clock;
     private int tick;
 
     ShowcaseModel(long seed, Clock clock) {
-        this.random = new Random(seed);
+        this.seed = ByteBuffer.allocate(Long.BYTES).putLong(seed).array();
         this.clock = clock;
     }
 
     ShowcaseSnapshot next() {
         tick++;
+        ByteBuffer sample = ByteBuffer.wrap(sampleDigest());
         return new ShowcaseSnapshot(
-            94 + random.nextInt(6),
+            94 + Math.floorMod(sample.getInt(), 6),
             19 + (tick % 9),
             tick % 5 == 0 ? "A+" : "A",
-            58 + random.nextInt(39),
+            58 + Math.floorMod(sample.getInt(), 39),
             LocalTime.now(clock).format(DateTimeFormatter.ofPattern("HH:mm:ss"))
         );
+    }
+
+    private byte[] sampleDigest() {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            digest.update(seed);
+            digest.update(ByteBuffer.allocate(Integer.BYTES).putInt(tick).array());
+            return digest.digest();
+        } catch (NoSuchAlgorithmException error) {
+            throw new IllegalStateException("SHA-256 is unavailable", error);
+        }
     }
 }
 
